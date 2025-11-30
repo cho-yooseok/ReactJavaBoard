@@ -218,10 +218,6 @@ Long likeCount = postLikeRepository.countByPostId(post.getId());
 
 이 프로젝트는 개인 포트폴리오 목적으로 제작되었습니다.
 
-## 작성자
-
-조유석 (cho-yooseok)
-
 ##  참고사항
 
 - 초기 관리자 계정은 직접 데이터베이스에 추가하거나 회원가입 후 역할을 변경해야 합니다.
