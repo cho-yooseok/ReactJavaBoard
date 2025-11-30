@@ -227,3 +227,59 @@ Long likeCount = postLikeRepository.countByPostId(post.getId());
 - 초기 관리자 계정은 직접 데이터베이스에 추가하거나 회원가입 후 역할을 변경해야 합니다.
 - JWT 시크릿 키는 `application.properties`에서 변경 가능합니다.
 - 프로덕션 환경에서는 보안 설정을 강화해야 합니다.
+
+
+##  실제 시연 스크린샷
+![alt text](<src/main/resources/static/javareactboardss/스크린샷 2025-11-30 172006.png>)
+
+![alt text](<src/main/resources/static/javareactboardss/스크린샷 2025-11-30 170755.png>)
+
+![alt text](<src/main/resources/static/javareactboardss/스크린샷 2025-11-30 170815.png>)
+
+![alt text](<src/main/resources/static/javareactboardss/스크린샷 2025-11-30 170845.png>)
+
+![alt text](<src/main/resources/static/javareactboardss/스크린샷 2025-11-30 170853.png>)
+
+![alt text](<src/main/resources/static/javareactboardss/스크린샷 2025-11-30 170907.png>)
+
+![alt text](<src/main/resources/static/javareactboardss/스크린샷 2025-11-30 171232.png>)
+
+![alt text](<src/main/resources/static/javareactboardss/스크린샷 2025-11-30 171242.png>)
+
+![alt text](<src/main/resources/static/javareactboardss/스크린샷 2025-11-30 171255.png>)
+
+![alt text](<src/main/resources/static/javareactboardss/스크린샷 2025-11-30 171400.png>)
+
+![alt text](<src/main/resources/static/javareactboardss/스크린샷 2025-11-30 171417.png>)
+
+![alt text](<src/main/resources/static/javareactboardss/스크린샷 2025-11-30 171428.png>)
+
+![alt text](<src/main/resources/static/javareactboardss/스크린샷 2025-11-30 171436.png>)
+
+![alt text](<src/main/resources/static/javareactboardss/스크린샷 2025-11-30 171446.png>)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
