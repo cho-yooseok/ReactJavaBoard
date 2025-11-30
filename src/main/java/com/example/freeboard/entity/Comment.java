@@ -42,7 +42,7 @@ public class Comment {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    private Integer likeCount = 0;
+    private Long likeCount = 0L;
 
     @OneToMany(mappedBy = "comment", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<CommentLike> likes = new HashSet<>();

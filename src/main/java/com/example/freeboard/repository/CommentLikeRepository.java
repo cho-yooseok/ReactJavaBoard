@@ -19,6 +19,9 @@ public interface CommentLikeRepository extends JpaRepository<CommentLike, Long> 
     // === 특정 댓글과 특정 사용자의 좋아요 여부 확인 ===
     boolean existsByCommentAndUser(Comment comment, User user);
 
+    // === 특정 댓글의 좋아요 개수 조회 ===
+    Long countByComment(Comment comment);
+
     // === 특정 사용자가 누른 모든 좋아요 삭제 ===
     @Transactional
     @Modifying

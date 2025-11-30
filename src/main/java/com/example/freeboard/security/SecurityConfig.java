@@ -16,6 +16,10 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import java.util.Arrays;
 
 @Configuration
 @EnableWebSecurity
@@ -26,7 +30,8 @@ public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
     @Autowired
-    public SecurityConfig(CustomUserDetailsService userDetailsService, JwtAuthenticationFilter jwtAuthenticationFilter) {
+    public SecurityConfig(CustomUserDetailsService userDetailsService,
+            JwtAuthenticationFilter jwtAuthenticationFilter) {
         this.userDetailsService = userDetailsService;
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
     }
@@ -50,10 +55,25 @@ public class SecurityConfig {
     }
 
     @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowedOriginPatterns(Arrays.asList("*"));
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedHeaders(Arrays.asList("*"));
+        configuration.setAllowCredentials(true);
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
+    }
+
+    @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
+                .cors(cors -> cors.configurationSource(corsConfigurationSource())) // CORS 설정 추가
                 .csrf(csrf -> csrf.disable()) // CSRF 비활성화 (JWT 사용 시 일반적으로 필요 없음)
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // 세션 사용 안 함
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // 세션 사용 안
+                                                                                                              // 함
                 .authorizeHttpRequests(auth -> auth
                         // 1. HTML 파일 및 정적 리소스 접근 허용
                         .requestMatchers(
@@ -67,8 +87,10 @@ public class SecurityConfig {
                         ).permitAll()
 
                         // 2. 공개 API 접근 허용 (인증 없이 접근 가능)
-                        .requestMatchers("/api/auth/**").permitAll() // 회원가입, 로그인 관련 API
-                        .requestMatchers(HttpMethod.GET, "/api/posts", "/api/posts/**").permitAll() // 게시글 목록 조회 및 특정 게시글 상세 조회
+                        .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
+                        .requestMatchers("/api/auth/login", "/api/auth/register").permitAll() // 로그인, 회원가입만 허용
+                        .requestMatchers(HttpMethod.GET, "/api/posts", "/api/posts/**").permitAll() // 게시글 목록 조회 및 특정
+                                                                                                    // 게시글 상세 조회
                         .requestMatchers(HttpMethod.GET, "/api/posts/*/comments").permitAll() // 특정 게시글의 댓글 목록 조회
 
                         // 3. 관리자 API는 ROLE_ADMIN만 접근 허용
@@ -88,8 +110,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.DELETE, "/api/posts/*/comments/**").authenticated() // 댓글 삭제
 
                         // 5. 그 외 모든 요청은 인증 필요
-                        .anyRequest().authenticated()
-                )
+                        .anyRequest().authenticated())
                 // DaoAuthenticationProvider를 사용하여 사용자 인증 처리
                 .authenticationProvider(authenticationProvider())
                 // JWT 필터를 UsernamePasswordAuthenticationFilter 이전에 추가하여 요청 헤더의 JWT 토큰을 검증

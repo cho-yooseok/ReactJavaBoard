@@ -15,8 +15,9 @@ public class AdminCommentResponseDto {
     private LocalDateTime createdAt;
     private Long postId;
     private String postTitle;
+    private Long likeCount;
 
-    public static AdminCommentResponseDto fromEntity(Comment comment) {
+    public static AdminCommentResponseDto fromEntity(Comment comment, Long likeCount) {
         return AdminCommentResponseDto.builder()
                 .id(comment.getId())
                 .content(comment.getContent())
@@ -24,6 +25,7 @@ public class AdminCommentResponseDto {
                 .createdAt(comment.getCreatedAt())
                 .postId(comment.getPost() != null ? comment.getPost().getId() : null)
                 .postTitle(comment.getPost() != null ? comment.getPost().getTitle() : "삭제된 게시글")
+                .likeCount(likeCount)
                 .build();
     }
 }

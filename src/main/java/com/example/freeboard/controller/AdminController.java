@@ -21,8 +21,8 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor // final 필드에 대한 생성자를 자동 생성 (DI)
 public class AdminController {
 
-    private final UserService userService;   // 사용자 관리 서비스
-    private final PostService postService;   // 게시글 관리 서비스
+    private final UserService userService; // 사용자 관리 서비스
+    private final PostService postService; // 게시글 관리 서비스
     private final CommentService commentService; // 댓글 관리 서비스
 
     // --- 사용자 관리 ---
@@ -60,7 +60,6 @@ public class AdminController {
         UserDto updatedUser = userService.updateUserRole(userId, role); // 권한 업데이트
         return ResponseEntity.ok(updatedUser); // 업데이트된 사용자 정보 반환
     }
-
 
     // --- 게시글 관리 ---
 

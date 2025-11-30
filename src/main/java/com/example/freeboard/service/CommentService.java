@@ -31,7 +31,8 @@ public class CommentService {
     private final CommentLikeRepository commentLikeRepository;
 
     @Autowired
-    public CommentService(CommentRepository commentRepository, PostRepository postRepository, CommentLikeRepository commentLikeRepository) {
+    public CommentService(CommentRepository commentRepository, PostRepository postRepository,
+            CommentLikeRepository commentLikeRepository) {
         this.commentRepository = commentRepository;
         this.postRepository = postRepository;
         this.commentLikeRepository = commentLikeRepository;
@@ -43,7 +44,8 @@ public class CommentService {
         return comments.stream()
                 .map(comment -> {
                     // KEY POINT: 각 댓글마다 현재 로그인한 사용자의 '좋아요' 여부를 확인합니다.
-                    boolean likedByCurrentUser = (currentUser != null) && commentLikeRepository.existsByCommentAndUser(comment, currentUser);
+                    boolean likedByCurrentUser = (currentUser != null)
+                            && commentLikeRepository.existsByCommentAndUser(comment, currentUser);
                     long likeCount = comment.getLikeCount() != null ? comment.getLikeCount() : 0L;
                     // KEY POINT: DTO 생성 시 '좋아요' 상태를 함께 전달합니다.
                     return new CommentResponseDto(comment, likedByCurrentUser, likeCount);
@@ -60,7 +62,7 @@ public class CommentService {
         comment.setPost(post);
         comment.setAuthor(author);
         comment.setContent(commentRequest.getContent());
-        comment.setLikeCount(0);
+        comment.setLikeCount(0L);
         return commentRepository.save(comment);
     }
 
@@ -73,7 +75,7 @@ public class CommentService {
 
         if (existingLike.isPresent()) {
             commentLikeRepository.delete(existingLike.get());
-            comment.setLikeCount(Math.max(0, comment.getLikeCount() - 1));
+            comment.setLikeCount(Math.max(0L, comment.getLikeCount() - 1));
         } else {
             CommentLike newLike = new CommentLike();
             newLike.setComment(comment);
@@ -129,6 +131,9 @@ public class CommentService {
         } else {
             commentsPage = commentRepository.findAllForAdmin(pageable);
         }
-        return commentsPage.map(AdminCommentResponseDto::fromEntity);
+        return commentsPage.map(comment -> {
+            Long likeCount = commentLikeRepository.countByComment(comment);
+            return AdminCommentResponseDto.fromEntity(comment, likeCount);
+        });
     }
 }

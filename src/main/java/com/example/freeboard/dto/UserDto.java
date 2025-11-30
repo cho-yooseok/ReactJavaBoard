@@ -23,7 +23,7 @@ public class UserDto {
         UserDto dto = new UserDto();
         dto.setId(user.getId());
         dto.setUsername(user.getUsername());
-        dto.setRole(user.getRole().name());
+        dto.setRole(user.getRole() != null ? user.getRole().name() : "USER");
         dto.setCreatedAt(user.getCreatedAt());
         return dto;
     }

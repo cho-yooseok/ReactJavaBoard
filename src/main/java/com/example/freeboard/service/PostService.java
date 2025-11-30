@@ -25,27 +25,36 @@ public class PostService {
     private final PostLikeRepository postLikeRepository;
     private final CommentRepository commentRepository;
 
-    public PostService(PostRepository postRepository, PostLikeRepository postLikeRepository, CommentRepository commentRepository) {
+    public PostService(PostRepository postRepository, PostLikeRepository postLikeRepository,
+            CommentRepository commentRepository) {
         this.postRepository = postRepository;
         this.postLikeRepository = postLikeRepository;
         this.commentRepository = commentRepository;
     }
 
     @Transactional(readOnly = true)
-    public Page<PostResponseDto> getAllPosts(Pageable pageable, String searchKeyword) {
+    public Page<PostResponseDto> getAllPosts(Pageable pageable, String searchKeyword, String searchType) {
         Page<Post> postsPage;
         if (searchKeyword != null && !searchKeyword.trim().isEmpty()) {
-            postsPage = postRepository.findByTitleContainingIgnoreCaseOrContentContainingIgnoreCaseWithAuthor(searchKeyword, pageable);
+            if ("title".equalsIgnoreCase(searchType)) {
+                postsPage = postRepository.findByTitleContainingIgnoreCaseWithAuthor(searchKeyword, pageable);
+            } else if ("content".equalsIgnoreCase(searchType)) {
+                postsPage = postRepository.findByContentContainingIgnoreCaseWithAuthor(searchKeyword, pageable);
+            } else {
+                postsPage = postRepository.findByTitleContainingIgnoreCaseOrContentContainingIgnoreCaseWithAuthor(
+                        searchKeyword, pageable);
+            }
         } else {
             postsPage = postRepository.findAllWithAuthor(pageable);
         }
         return postsPage.map(post -> {
-            Long likeCount = postLikeRepository.countByPost(post);
+            Long likeCount = postLikeRepository.countByPostId(post.getId());
             Long commentCount = commentRepository.countByPostId(post.getId());
+            String authorUsername = post.getAuthor() != null ? post.getAuthor().getUsername() : "Unknown";
             return PostResponseDto.builder()
                     .id(post.getId())
                     .title(post.getTitle())
-                    .authorUsername(post.getAuthor().getUsername())
+                    .authorUsername(authorUsername)
                     .createdAt(post.getCreatedAt())
                     .viewCount(post.getViewCount())
                     .likeCount(likeCount)
@@ -66,7 +75,7 @@ public class PostService {
                 .map(user -> postLikeRepository.existsByPostAndUser(post, user))
                 .orElse(false);
 
-        Long likeCount = postLikeRepository.countByPost(post);
+        Long likeCount = postLikeRepository.countByPostId(post.getId());
         Long commentCount = commentRepository.countByPostId(post.getId());
 
         return PostResponseDto.builder()
@@ -83,12 +92,11 @@ public class PostService {
                 .build();
     }
 
-
     @Transactional(readOnly = true)
     public PostResponseDto getPostByIdNoViewCount(Long id) {
         Post post = postRepository.findByIdWithAuthor(id)
                 .orElseThrow(() -> new EntityNotFoundException("게시글을 찾을 수 없습니다: " + id));
-        Long likeCount = postLikeRepository.countByPost(post);
+        Long likeCount = postLikeRepository.countByPostId(post.getId());
         Long commentCount = commentRepository.countByPostId(post.getId());
         return PostResponseDto.builder()
                 .id(post.getId())
@@ -134,7 +142,7 @@ public class PostService {
         post.setTitle(postRequest.getTitle());
         post.setContent(postRequest.getContent());
         post = postRepository.save(post);
-        Long likeCount = postLikeRepository.countByPost(post);
+        Long likeCount = postLikeRepository.countByPostId(post.getId());
         Long commentCount = commentRepository.countByPostId(post.getId());
         return PostResponseDto.builder()
                 .id(post.getId())
@@ -200,12 +208,13 @@ public class PostService {
     public Page<PostResponseDto> getAllPostsForAdmin(Pageable pageable, String searchKeyword) {
         Page<Post> postsPage;
         if (searchKeyword != null && !searchKeyword.trim().isEmpty()) {
-            postsPage = postRepository.findByTitleContainingIgnoreCaseOrContentContainingIgnoreCaseForAdmin(searchKeyword, pageable);
+            postsPage = postRepository
+                    .findByTitleContainingIgnoreCaseOrContentContainingIgnoreCaseForAdmin(searchKeyword, pageable);
         } else {
             postsPage = postRepository.findAllForAdmin(pageable);
         }
         return postsPage.map(post -> {
-            Long likeCount = postLikeRepository.countByPost(post);
+            Long likeCount = postLikeRepository.countByPostId(post.getId());
             Long commentCount = commentRepository.countByPostId(post.getId());
             return PostResponseDto.fromEntityForAdmin(post, likeCount, commentCount);
         });

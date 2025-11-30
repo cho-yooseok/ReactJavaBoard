@@ -35,21 +35,20 @@ public class PostController {
     @GetMapping
     public ResponseEntity<Page<PostResponseDto>> getAllPosts(
             @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable,
-            @RequestParam(required = false) String search) {
-        Page<PostResponseDto> posts = postService.getAllPosts(pageable, search);
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false, defaultValue = "all") String searchType) {
+        Page<PostResponseDto> posts = postService.getAllPosts(pageable, search, searchType);
         return ResponseEntity.ok(posts);
     }
 
     // 게시글 상세 조회 (조회수 증가 및 좋아요 상태 포함)
     @GetMapping("/{id}")
     public ResponseEntity<PostResponseDto> getPostById(@PathVariable Long id,
-                                                       @AuthenticationPrincipal(expression = "null") UserDetails userDetails) {
+            @AuthenticationPrincipal UserDetails userDetails) {
         Optional<User> currentUserOpt = Optional.empty();
         if (userDetails != null) {
             currentUserOpt = userService.findByUsername(userDetails.getUsername());
         }
-
-        // 서비스 계층으로 현재 사용자 정보를 넘겨서 DTO를 완성
         PostResponseDto postDto = postService.getPostById(id, currentUserOpt);
         return ResponseEntity.ok(postDto);
     }
@@ -64,7 +63,7 @@ public class PostController {
     // 게시글 좋아요 토글
     @PostMapping("/{postId}/like")
     public ResponseEntity<PostResponseDto> togglePostLike(@PathVariable Long postId,
-                                                          @AuthenticationPrincipal UserDetails userDetails) {
+            @AuthenticationPrincipal UserDetails userDetails) {
         if (userDetails == null) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
@@ -78,7 +77,12 @@ public class PostController {
     // 게시글 생성
     @PostMapping
     public ResponseEntity<PostResponseDto> createPost(@Valid @RequestBody PostCreateRequest postRequest,
-                                                      @AuthenticationPrincipal User currentUser) {
+            @AuthenticationPrincipal UserDetails userDetails) {
+        if (userDetails == null)
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        User currentUser = userService.findByUsername(userDetails.getUsername())
+                .orElseThrow(() -> new IllegalStateException("인증된 사용자를 찾을 수 없습니다."));
+
         PostResponseDto createdPost = postService.createPost(postRequest, currentUser);
         return new ResponseEntity<>(createdPost, HttpStatus.CREATED);
     }
@@ -86,8 +90,13 @@ public class PostController {
     // 게시글 수정
     @PutMapping("/{id}")
     public ResponseEntity<PostResponseDto> updatePost(@PathVariable Long id,
-                                                      @Valid @RequestBody PostUpdateRequest postRequest,
-                                                      @AuthenticationPrincipal User currentUser) {
+            @Valid @RequestBody PostUpdateRequest postRequest,
+            @AuthenticationPrincipal UserDetails userDetails) {
+        if (userDetails == null)
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        User currentUser = userService.findByUsername(userDetails.getUsername())
+                .orElseThrow(() -> new IllegalStateException("인증된 사용자를 찾을 수 없습니다."));
+
         PostResponseDto updatedPost = postService.updatePost(id, postRequest, currentUser);
         return ResponseEntity.ok(updatedPost);
     }
@@ -95,7 +104,12 @@ public class PostController {
     // 게시글 삭제
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletePost(@PathVariable Long id,
-                                           @AuthenticationPrincipal User currentUser) {
+            @AuthenticationPrincipal UserDetails userDetails) {
+        if (userDetails == null)
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        User currentUser = userService.findByUsername(userDetails.getUsername())
+                .orElseThrow(() -> new IllegalStateException("인증된 사용자를 찾을 수 없습니다."));
+
         postService.deletePost(id, currentUser);
         return ResponseEntity.noContent().build();
     }

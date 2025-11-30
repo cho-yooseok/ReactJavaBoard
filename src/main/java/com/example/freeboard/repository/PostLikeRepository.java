@@ -19,6 +19,8 @@ public interface PostLikeRepository extends JpaRepository<PostLike, Long> {
 
     long countByPost(Post post);
 
+    long countByPostId(Long postId);
+
     // === 사용자 삭제 메서드 ===
     @Transactional
     @Modifying
